@@ -15,8 +15,6 @@ This is the [kploy](http://kubernetes.sh/kploy/) application registry service. I
 
 ## To do
 
-- package as Dockerfile
-- create GCP service account
 - create Autobuild on DockerHub
 - deploy as app via kploy
 - set up Cloud DNS for kploy.net domain
