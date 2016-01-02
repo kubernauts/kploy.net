@@ -12,3 +12,11 @@ This is the [kploy](http://kubernetes.sh/kploy/) application registry service. I
 
 - [google-api-python-client](https://github.com/google/google-api-python-client)
 - [Tornado](http://www.tornadoweb.org/en/stable/)
+
+## To do
+
+- create GCP service account
+- package as Dockerfile
+- create Autobuild on DockerHub
+- deploy as app via kploy
+- set up Cloud DNS for kploy.net domain
