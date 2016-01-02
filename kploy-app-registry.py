@@ -17,7 +17,6 @@ import argparse
 import json
 import tornado.ioloop
 import tornado.web
-import requests
 
 from tornado.escape import json_encode
 from apiclient import discovery
