@@ -1,4 +1,5 @@
 app_cache/
+kploy-credentials.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
