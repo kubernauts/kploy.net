@@ -25,6 +25,7 @@ from oauth2client.client import GoogleCredentials
 
 DEBUG = True
 
+KAR_PORT =  9876
 DOWNLOAD_BUFFER_SIZE = 4096
 KPLOY_GCS_BUCKET = "kploy.net"
 TEMP_APPARCHIVE_DIR = "app_cache/"
@@ -84,7 +85,7 @@ class GCSProxy(object):
 class TopLevelHandler(tornado.web.RequestHandler):
 
     def get(self):
-        self.write("Nothing to see here. The API is at <a href='/api/v1/'>/api/v1/</a>")
+        self.write("Nothing to see here. The API is at <a href='/api/v1'>/api/v1</a>")
 
 class V1APIHandlerUploadApp(tornado.web.RequestHandler):
     def get(self):
@@ -126,12 +127,15 @@ class V1APIHandlerApps(tornado.web.RequestHandler):
         """
         gcsp = GCSProxy()
         app_name = "".join([app_uuid, ".zip"])
-        content = gcsp.get_app(app_name)
-        if content:
-            self.set_header("Content-Type", "application/octet-stream")
-            self.write(content)
-            self.finish()
-        else:
+        try:
+            content = gcsp.get_app(app_name)
+            if content:
+                self.set_header("Content-Type", "application/octet-stream")
+                self.write(content)
+                self.finish()
+            else:
+                self.set_status(404)
+        except:
             self.set_status(404)
 
 class V1APIHandler(tornado.web.RequestHandler):
@@ -152,5 +156,5 @@ if __name__ == "__main__":
     if not os.path.exists(TEMP_APPARCHIVE_DIR):
         os.makedirs(TEMP_APPARCHIVE_DIR)
     app = make_app()
-    app.listen(9876)
+    app.listen(KAR_PORT)
     tornado.ioloop.IOLoop.current().start()

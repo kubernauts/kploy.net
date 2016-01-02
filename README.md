@@ -4,9 +4,9 @@ This is the [kploy](http://kubernetes.sh/kploy/) application registry service. I
 
 ## API
 
-- `/api/v1` [GET]
-- `/api/v1/app` [GET] | [POST]
-- `/api/v1/app/$APP_UUID` [GET]
+- `/api/v1` `[GET]`
+- `/api/v1/app` `[GET]` | `[POST]`
+- `/api/v1/app/$APP_UUID` `[GET]`
 
 ## Dependencies
 
