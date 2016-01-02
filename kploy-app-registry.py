@@ -17,12 +17,14 @@ import argparse
 import json
 import tornado.ioloop
 import tornado.web
+import requests
 
+from tornado.escape import json_encode
 from apiclient import discovery
 from oauth2client.client import GoogleCredentials
 
 
-DEBUG = False    # you can change that to enable debug messages ...
+DEBUG = True
 
 DOWNLOAD_BUFFER_SIZE = 4096
 KPLOY_GCS_BUCKET = "kploy.net"
@@ -37,9 +39,10 @@ else:
 
 
 class GCSProxy(object):
-    def list_apps(self):
+
+    def bucket_status(self):
         """
-        List app archives stored in the kploy.net bucket on GCS.
+        Retrieves status of kploy.net bucket on GCS.
         """
         credentials = GoogleCredentials.get_application_default()
         service = discovery.build("storage", "v1", credentials=credentials)
@@ -47,24 +50,56 @@ class GCSProxy(object):
         resp = req.execute()
         return resp
 
+    def list_apps(self):
+        """
+        List app archives stored in the kploy.net bucket on GCS.
+        """
+        credentials = GoogleCredentials.get_application_default()
+        service = discovery.build("storage", "v1", credentials=credentials)
+        req = service.objects().list(bucket=KPLOY_GCS_BUCKET, fields="items(name,size)")
+        apps = req.execute()
+        return apps["items"]
+
+    def get_app(self, app_archive_filename):
+        """
+        Retrieves an app archive stored in the kploy.net bucket on GCS.
+        """
+        credentials = GoogleCredentials.get_application_default()
+        service = discovery.build("storage", "v1", credentials=credentials)
+        req = service.objects().get_media(bucket=KPLOY_GCS_BUCKET, object=app_archive_filename)
+        return req.execute()
+
     def store_app(self, app_archive_filename):
         """
         Stored an app archive in the kploy.net bucket on GCS.
         """
         credentials = GoogleCredentials.get_application_default()
         service = discovery.build('storage', 'v1', credentials=credentials)
-        req = service.objects().insert(media_body=os.path.join(TEMP_APPARCHIVE_DIR, app_archive_filename), name=app_archive_filename, bucket=KPLOY_GCS_BUCKET)
+        req = service.objects().insert(
+            media_body=os.path.join(TEMP_APPARCHIVE_DIR, app_archive_filename),
+            name=app_archive_filename,
+            bucket=KPLOY_GCS_BUCKET)
         resp = req.execute()
         return resp
 
 class TopLevelHandler(tornado.web.RequestHandler):
+
     def get(self):
         self.write("Nothing to see here. The API is at <a href='/api/v1/'>/api/v1/</a>")
 
-class V1APIHandlerPush(tornado.web.RequestHandler):
+class V1APIHandlerUploadApp(tornado.web.RequestHandler):
+    def get(self):
+        """
+        Handle app archive listing via `/api/v1/app` endpoint.
+        """
+        gcsp = GCSProxy()
+        apps = gcsp.list_apps()
+        self.set_header('Content-Type', 'application/json')
+        self.write(json_encode(apps))
+
     def post(self):
         """
-        Handle app archive uploads via `/api/v1/push` endpoint.
+        Handle app archive uploads via `/api/v1/app` endpoint.
         """
         h = hashlib.sha256()
         h.update(self.request.body)
@@ -74,24 +109,28 @@ class V1APIHandlerPush(tornado.web.RequestHandler):
         with open(tmp_app_archive_filename, "w") as app_archive_file:
             app_archive_file.write(self.request.body)
         gcsp = GCSProxy()
-        gcsp.store_app("".join([app_uuid, ".zip"]))
-        # todo: check if successful before removing the temp app archive
-        os.remove(tmp_app_archive_filename)
-        self.write("/api/v1/app/%s" %(app_uuid))
+        resp = gcsp.store_app("".join([app_uuid, ".zip"]))
+        logging.debug("App archive GCS result: %s" %(json.dumps(resp, indent=2)))
+        if resp["id"]: # if upload successful, remove the temp app archive
+            os.remove(tmp_app_archive_filename)
+        self.set_header('Content-Type', 'application/json')
+        app = { 
+            "app_archive_id" : app_uuid, 
+            "selfLink"       : "".join([self.request.protocol, "://", self.request.host, "/api/v1/app/", app_uuid]) 
+        }
+        self.write(json_encode(app))
 
 class V1APIHandlerApps(tornado.web.RequestHandler):
     def get(self, app_uuid):
         """
         Handle app archive downloads via `/api/v1/app/$APP_UUID` resources.
         """
-        if os.path.exists(app_uuid):
+        gcsp = GCSProxy()
+        app_name = "".join([app_uuid, ".zip"])
+        content = gcsp.get_app(app_name)
+        if content:
             self.set_header("Content-Type", "application/octet-stream")
-            with open(app_uuid, "r") as f:
-                while True:
-                    data = f.read(DOWNLOAD_BUFFER_SIZE)
-                    if not data:
-                        break
-                    self.write(data)
+            self.write(content)
             self.finish()
         else:
             self.set_status(404)
@@ -99,15 +138,14 @@ class V1APIHandlerApps(tornado.web.RequestHandler):
 class V1APIHandler(tornado.web.RequestHandler):
     def get(self):
         gcsp = GCSProxy()
-        self.write("<p>overall system status: \o/</p>")
-        self.write("<p>apps:</p>")
-        self.write("<pre>%s</pre>" %(json.dumps(gcsp.list_apps(), indent=2)))
+        self.set_header('Content-Type', 'application/json')
+        self.write(json_encode(gcsp.bucket_status()))
 
 def make_app():
     return tornado.web.Application([
         (r"/", TopLevelHandler),
         (r"/api/v1", V1APIHandler),
-        (r"/api/v1/push", V1APIHandlerPush),
+        (r"/api/v1/app", V1APIHandlerUploadApp),
         (r"/api/v1/app/(.*)", V1APIHandlerApps)
     ])
 
