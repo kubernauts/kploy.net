@@ -12,6 +12,8 @@ Environment is Google Cloud Platform, using [Google Container Engine](https://cl
 
 Note that because we're deploying kploy.net on GCP, the [app credentials](https://developers.google.com/identity/protocols/application-default-credentials) are available directly via the kploy.net service account.
 
+Note: need to explicitly handle `https://www.googleapis.com/auth/devstorage.read_write` scope as of https://cloud.google.com/compute/docs/api/how-tos/authorization in order to upload object into bucket (TBD: ref to source code).
+
 ### Manual setup
 
     $ cd && git clone https://github.com/kubernauts/kploy.net.git && cd kploy.net/deploy
@@ -22,8 +24,7 @@ Note that because we're deploying kploy.net on GCP, the [app credentials](https:
 
     # install kploy: 
     $ git clone https://github.com/kubernauts/kploy.git && cd kploy
-    $ sudo python setup.py install
-    $ export KPLOY_HOME=${PWD}
+    $ sudo python setup.py install && export KPLOY_HOME=${PWD}
 
 The following part TBD after `https` fix for kploy is done:
 

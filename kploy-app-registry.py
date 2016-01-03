@@ -74,7 +74,8 @@ class GCSProxy(object):
         Stored an app archive in the kploy.net bucket on GCS.
         """
         credentials = GoogleCredentials.get_application_default()
-        service = discovery.build('storage', 'v1', credentials=credentials)
+        credentials.create_scoped("https://www.googleapis.com/auth/devstorage.read_write")
+        service = discovery.build("storage", "v1", credentials=credentials)
         req = service.objects().insert(
             media_body=os.path.join(TEMP_APPARCHIVE_DIR, app_archive_filename),
             name=app_archive_filename,
@@ -94,7 +95,7 @@ class V1APIHandlerUploadApp(tornado.web.RequestHandler):
         """
         gcsp = GCSProxy()
         apps = gcsp.list_apps()
-        self.set_header('Content-Type', 'application/json')
+        self.set_header("Content-Type", "application/json")
         if "items" in apps:
             self.write(json_encode(apps["items"]))
         else: 
@@ -116,7 +117,7 @@ class V1APIHandlerUploadApp(tornado.web.RequestHandler):
         logging.debug("App archive GCS result: %s" %(json.dumps(resp, indent=2)))
         if resp["id"]: # if upload successful, remove the temp app archive
             os.remove(tmp_app_archive_filename)
-        self.set_header('Content-Type', 'application/json')
+        self.set_header("Content-Type", "application/json")
         app = { 
             "app_archive_id" : app_uuid, 
             "selfLink"       : "".join([self.request.protocol, "://", self.request.host, "/api/v1/app/", app_uuid]) 
@@ -144,7 +145,7 @@ class V1APIHandlerApps(tornado.web.RequestHandler):
 class V1APIHandler(tornado.web.RequestHandler):
     def get(self):
         gcsp = GCSProxy()
-        self.set_header('Content-Type', 'application/json')
+        self.set_header("Content-Type", "application/json")
         self.write(json_encode(gcsp.bucket_status()))
 
 def make_app():
