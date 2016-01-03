@@ -4,7 +4,8 @@ This is the [kploy](http://kubernetes.sh/kploy/) application registry service. I
 
 ## API
 
-- `/api/v1` `[GET]`
+- Workspaces: `?workspace=http://example.org/some/path -> example.org/some/path/` or `global/` if missing
+- `/api/v1` `[GET]` 
 - `/api/v1/app` `[GET]` | `[POST]`
 - `/api/v1/app/$APP_UUID` `[GET]`
 
@@ -15,6 +16,5 @@ This is the [kploy](http://kubernetes.sh/kploy/) application registry service. I
 
 ## To do
 
-- deploy as app via kploy
 - set up Cloud DNS for kploy.net domain
 - add API doc, here
