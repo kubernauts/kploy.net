@@ -74,7 +74,6 @@ class GCSProxy(object):
         Stored an app archive in the kploy.net bucket on GCS.
         """
         credentials = GoogleCredentials.get_application_default()
-        credentials = credentials.create_scoped(["https://www.googleapis.com/auth/devstorage.read_write"])
         service = discovery.build("storage", "v1", credentials=credentials)
         req = service.objects().insert(
             media_body=os.path.join(TEMP_APPARCHIVE_DIR, app_archive_filename),
