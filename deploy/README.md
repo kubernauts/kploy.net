@@ -5,14 +5,15 @@ Environment is Google Cloud Platform, using [Google Container Engine](https://cl
 ## Ramp up the K8S cluster
 
     $ gcloud config set compute/zone europe-west1-d
-    $ gcloud container clusters create kploy-net --num-nodes 1 --machine-type g1-small
+    $ gcloud container clusters create kploy-net --scopes storage-rw --num-nodes 1 --machine-type g1-small
     $ gcloud compute instances list
+
+Note: per [default](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) the GKE cluster is created with a scope `compute-rw, storage-ro`, which is not sufficient if one wants to write to Cloud Storage from a container. Hence, above the `--scopes storage-rw` addition.
+
 
 ## Set up kploy.net
 
 Note that because we're deploying kploy.net on GCP, the [app credentials](https://developers.google.com/identity/protocols/application-default-credentials) are available directly via the kploy.net service account.
-
-Note: need to explicitly handle `https://www.googleapis.com/auth/devstorage.read_write` scope as of https://cloud.google.com/compute/docs/api/how-tos/authorization in order to upload object into bucket (TBD: ref to source code).
 
 ### Manual setup
 
