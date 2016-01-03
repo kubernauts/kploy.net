@@ -95,7 +95,7 @@ class V1APIHandlerUploadApp(tornado.web.RequestHandler):
         gcsp = GCSProxy()
         apps = gcsp.list_apps()
         self.set_header('Content-Type', 'application/json')
-        if apps["items"]:
+        if "items" in apps:
             self.write(json_encode(apps["items"]))
         else: 
             self.write(json_encode(apps))
