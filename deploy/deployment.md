@@ -10,6 +10,8 @@ Environment is Google Cloud Platform, using [Google Container Engine](https://cl
 
 ## Set up kploy.net
 
+Note that because we're deploying kploy.net on GCP, the [app credentials](https://developers.google.com/identity/protocols/application-default-credentials) are available directly via the kploy.net service account.
+
 ### Manual setup
 
     $ cd && git clone https://github.com/kubernauts/kploy.net.git && cd kploy.net/deploy

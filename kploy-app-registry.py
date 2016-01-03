@@ -97,7 +97,7 @@ class V1APIHandlerUploadApp(tornado.web.RequestHandler):
         self.set_header('Content-Type', 'application/json')
         if apps["items"]:
             self.write(json_encode(apps["items"]))
-        else 
+        else: 
             self.write(json_encode(apps))
             
     def post(self):
