@@ -1,0 +1,6 @@
+apiserver: http://localhost:8080
+author: Michael Hausenblas
+cache_remotes: false
+name: kploy.net
+namespace: default
+source: https://github.com/kubernauts/kploy.net
