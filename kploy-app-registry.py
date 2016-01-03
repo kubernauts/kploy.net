@@ -58,7 +58,7 @@ class GCSProxy(object):
         service = discovery.build("storage", "v1", credentials=credentials)
         req = service.objects().list(bucket=KPLOY_GCS_BUCKET, fields="items(name,size)")
         apps = req.execute()
-        return apps["items"]
+        return apps
 
     def get_app(self, app_archive_filename):
         """
@@ -95,8 +95,11 @@ class V1APIHandlerUploadApp(tornado.web.RequestHandler):
         gcsp = GCSProxy()
         apps = gcsp.list_apps()
         self.set_header('Content-Type', 'application/json')
-        self.write(json_encode(apps))
-
+        if apps["items"]:
+            self.write(json_encode(apps["items"]))
+        else 
+            self.write(json_encode(apps))
+            
     def post(self):
         """
         Handle app archive uploads via `/api/v1/app` endpoint.

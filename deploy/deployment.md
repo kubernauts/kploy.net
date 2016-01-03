@@ -12,8 +12,6 @@ Environment is Google Cloud Platform, using [Google Container Engine](https://cl
 
 ### Manual setup
 
-From scratch:
-
     $ cd && git clone https://github.com/kubernauts/kploy.net.git && cd kploy.net/deploy
     $ kubectl create -f kploy-net-svc.yaml
     $ kubectl create -f kploy-net-rc.yaml 
@@ -24,12 +22,13 @@ From scratch:
     $ git clone https://github.com/kubernauts/kploy.git && cd kploy
     $ sudo python setup.py install
     $ export KPLOY_HOME=${PWD}
-    
+
+The following part TBD after `https` fix for kploy is done:
+
+    # install kploy.net:
     $ cd && git clone https://github.com/kubernauts/kploy.net.git && cd kploy.net
     $ export KPLOY_APISERVER=`kubectl config view -o template --template='{{range .clusters}}{{.cluster.server}}{{end}}'`
     $ sed -i "s@apiserver: http://localhost:8080@apiserver: $KPLOY_APISERVER@" deploy/Kployfile
-
-    --> TBD after https:// fix for kploy
 
 ## Operation
 
