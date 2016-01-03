@@ -21,7 +21,7 @@ Note that because we're deploying kploy.net on GCP, the [app credentials](https:
     $ kubectl create -f kploy-net-svc.yaml
     $ kubectl create -f kploy-net-rc.yaml 
 
-### Setup using kploy
+### WIP: Setup using kploy
 
     # install kploy: 
     $ git clone https://github.com/kubernauts/kploy.git && cd kploy
@@ -33,8 +33,6 @@ The following part TBD after `https` fix for kploy is done:
     $ cd && git clone https://github.com/kubernauts/kploy.net.git && cd kploy.net
     $ export KPLOY_APISERVER=`kubectl config view -o template --template='{{range .clusters}}{{.cluster.server}}{{end}}'`
     $ sed -i "s@apiserver: http://localhost:8080@apiserver: $KPLOY_APISERVER@" deploy/Kployfile
-
-## Operation
 
 ## Tear down the K8S cluster
 
