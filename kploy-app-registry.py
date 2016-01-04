@@ -53,11 +53,15 @@ class GCSProxy(object):
 
     def list_apps(self, workspace):
         """
-        List app archives stored in the kploy.net bucket on GCS.
+        Lists app archives stored in the kploy.net bucket on GCS.
         """
         credentials = GoogleCredentials.get_application_default()
         service = discovery.build("storage", "v1", credentials=credentials)
-        req = service.objects().list(bucket=KPLOY_GCS_BUCKET, prefix=workspace, fields="items(name,size)")
+        req = service.objects().list(
+            bucket=KPLOY_GCS_BUCKET,
+            prefix=workspace,
+            fields="items(name,timeCreated,generation,size)"
+        )
         apps = req.execute()
         return apps
 
@@ -67,7 +71,10 @@ class GCSProxy(object):
         """
         credentials = GoogleCredentials.get_application_default()
         service = discovery.build("storage", "v1", credentials=credentials)
-        req = service.objects().get_media(bucket=KPLOY_GCS_BUCKET, object="".join([workspace, app_archive_filename]))
+        req = service.objects().get_media(
+            bucket=KPLOY_GCS_BUCKET,
+            object="".join([workspace, app_archive_filename])
+        )
         return req.execute()
 
     def store_app(self, workspace, app_archive_filename):
@@ -77,16 +84,31 @@ class GCSProxy(object):
         credentials = GoogleCredentials.get_application_default()
         service = discovery.build("storage", "v1", credentials=credentials)
         req = service.objects().insert(
+            bucket=KPLOY_GCS_BUCKET,
             media_body=os.path.join(TEMP_APPARCHIVE_DIR, app_archive_filename),
-            name="".join([workspace, app_archive_filename]),
-            bucket=KPLOY_GCS_BUCKET)
+            name="".join([workspace, app_archive_filename])
+        )
         resp = req.execute()
         return resp
+
+    def remove_app(self, workspace, app_archive_filename):
+        """
+        Removes an app archive from a workspace of the kploy.net bucket on GCS.
+        """
+        credentials = GoogleCredentials.get_application_default()
+        service = discovery.build("storage", "v1", credentials=credentials)
+        req = service.objects().delete(
+            bucket=KPLOY_GCS_BUCKET,
+            object="".join([workspace, app_archive_filename]),
+        )
+        resp = req.execute()
+        return resp
+
 
 class TopLevelHandler(tornado.web.RequestHandler):
     def get(self):
         """
-        Handle top-level resource.
+        Handles top-level resource.
         """
         self.write("Nothing to see here. The API is at <a href='/api/v1'>/api/v1</a>")
 
@@ -109,7 +131,7 @@ class V1APIHandlerUploadApp(tornado.web.RequestHandler):
             
     def post(self):
         """
-        Handle app archive uploads via `/api/v1/app` endpoint.
+        Handles app archive uploads via `/api/v1/app` endpoint.
         """
         # get workspace from URL query part:
         query_arg = self.get_query_argument(name="workspace", default=GLOBAL_WORKSPACE, strip=True)
@@ -147,7 +169,7 @@ class V1APIHandlerUploadApp(tornado.web.RequestHandler):
 class V1APIHandlerApps(tornado.web.RequestHandler):
     def get(self, app_uuid):
         """
-        Handle app archive downloads via `/api/v1/app/$APP_UUID` resources.
+        Handles app archive downloads via `/api/v1/app/$APP_UUID` resource.
         """
         # get workspace from URL query part:
         query_arg = self.get_query_argument(name="workspace", default=GLOBAL_WORKSPACE, strip=True)
@@ -163,6 +185,24 @@ class V1APIHandlerApps(tornado.web.RequestHandler):
                 self.finish()
             else:
                 self.set_status(404)
+        except:
+            self.set_status(404)
+
+    def delete(self, app_uuid):
+        """
+        Handles app archive removal via `/api/v1/app/$APP_UUID` resource.
+        """
+        # get workspace from URL query part:
+        query_arg = self.get_query_argument(name="workspace", default=GLOBAL_WORKSPACE, strip=True)
+        workspace = _extract_workspace(query_arg)
+        
+        gcsp = GCSProxy()
+        app_name = "".join([app_uuid, ".zip"])
+        try:
+            logging.debug("Trying to remove: %s" %(app_name))
+            resp = gcsp.remove_app(workspace, app_name)
+            logging.debug("App archive GCS result: %s" %(resp))
+            self.set_status(204)
         except:
             self.set_status(404)
 
