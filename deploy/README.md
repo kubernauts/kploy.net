@@ -10,7 +10,6 @@ Environment is Google Cloud Platform, using [Google Container Engine](https://cl
 
 Note: per [default](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) the GKE cluster is created with a scope `compute-rw, storage-ro`, which is not sufficient if one wants to write to Cloud Storage from a container. Hence, above the `--scopes storage-rw` addition.
 
-
 ## Set up kploy.net
 
 Note that because we're deploying kploy.net on GCP, the [app credentials](https://developers.google.com/identity/protocols/application-default-credentials) are available directly via the kploy.net service account.
@@ -33,6 +32,19 @@ The following part TBD after `https` fix for kploy is done:
     $ cd && git clone https://github.com/kubernauts/kploy.net.git && cd kploy.net
     $ export KPLOY_APISERVER=`kubectl config view -o template --template='{{range .clusters}}{{.cluster.server}}{{end}}'`
     $ sed -i "s@apiserver: http://localhost:8080@apiserver: $KPLOY_APISERVER@" deploy/Kployfile
+
+
+### WIP: Upgrades
+
+After pushing to GitHub and a new Docker image has successfully been built on [DockerHub](https://hub.docker.com/r/mhausenblas/kploy.net/builds/):
+
+    $ kubectl delete rc kploy-registry-rc
+    $ gcloud compute instances list
+    $ gcloud compute ssh $INSTANCE
+    $ sudo docker pull mhausenblas/kploy.net
+    $ sudo docker images
+    $ sudo docker rmi # manually remove old image
+    $ kubectl create -f deploy/kploy-net-rc.yaml
 
 ## Tear down the K8S cluster
 
