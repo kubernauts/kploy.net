@@ -43,16 +43,18 @@ A `GET` on `/api/v1/app` returns a JSON object, listing the app archives in the 
 
     $ http http://registry.kploy.net/api/v1/app
     HTTP/1.1 200 OK
-    Content-Length: 105
+    Content-Length: 182
     Content-Type: application/json
-    Date: Sun, 03 Jan 2016 18:17:26 GMT
-    Etag: "a460a3c55f5efed73046255540c07a3729e1feeb"
+    Date: Mon, 04 Jan 2016 12:31:12 GMT
+    Etag: "b1011ca9acca5149129e3493df7ee646a9808923"
     Server: TornadoServer/4.3
 
     [
         {
+            "generation": "1451910664277000",
             "name": "global/328ebadef2f23d30bf9f806d4eb67c56e2869f471ca34f18780c7ce31576021d.zip",
-            "size": "4952"
+            "size": "4952",
+            "timeCreated": "2016-01-04T12:31:04.276Z"
         }
     ]
 
@@ -68,8 +70,10 @@ With workspace explicitly set:
 
     [
         {
+            "generation": "1451845191642000",
             "name": "github.com/kubernauts/kploy.net/328ebadef2f23d30bf9f806d4eb67c56e2869f471ca34f18780c7ce31576021d.zip",
-            "size": "4952"
+            "size": "4952",
+            "timeCreated": "2016-01-03T18:19:51.641Z"
         }
     ]
 
@@ -94,6 +98,21 @@ A `GET` on `/api/v1/app/$APP_UUID` will download the app archive from the worksp
 With workspace explicitly set:
 
     $ http http://registry.kploy.net/api/v1/app/328ebadef2f23d30bf9f806d4eb67c56e2869f471ca34f18780c7ce31576021d?workspace=http://github.com/kubernauts/kploy.net
+
+### Remove app archive
+
+A `DELETE` on `/api/v1/app/$APP_UUID` will remove the app archive from the workspace:
+
+    $ http DELETE http://registry.kploy.net/api/v1/app/328ebadef2f23d30bf9f806d4eb67c56e2869f471ca34f18780c7ce31576021d
+    HTTP/1.1 204 No Content
+    Content-Length: 0
+    Content-Type: text/html; charset=UTF-8
+    Date: Mon, 04 Jan 2016 12:32:58 GMT
+    Server: TornadoServer/4.3
+
+With workspace explicitly set:
+
+    $ http DELETE http://registry.kploy.net/api/v1/app/328ebadef2f23d30bf9f806d4eb67c56e2869f471ca34f18780c7ce31576021d?workspace=http://github.com/kubernauts/kploy.net
 
 ## Dependencies
 
